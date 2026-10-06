@@ -1,0 +1,18 @@
+[project]
+name = "khazna"
+version = "1.0.0"
+description = "Khazna - private-by-design document assistant: bilingual RAG with permissions, PII masking, injection guard and no outbound network"
+requires-python = ">=3.10"
+license = "MIT"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 125
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "B", "UP"]
+ignore = ["E501", "B008", "B905"]

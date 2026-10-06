@@ -1,0 +1,7 @@
+# Optional: run a small open model inside the process (KHAZNA_LLM=transformers) or the multilingual retriever (KHAZNA_EMBED=e5).
+# Install torch first for your platform, e.g. CPU only:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+-r requirements.txt
+transformers>=5,<6
+accelerate>=1.10
+sentence-transformers>=5

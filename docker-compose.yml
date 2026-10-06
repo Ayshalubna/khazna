@@ -1,0 +1,24 @@
+# On a company server:  docker compose up -d   ->  http://localhost:8000
+# With a larger local model:  docker compose --profile ollama up -d
+#   then once:  docker compose exec ollama ollama pull qwen2.5:7b
+services:
+  khazna:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      KHAZNA_LLM: ${KHAZNA_LLM:-extractive}         # set to "ollama" to use the model below
+      KHAZNA_OLLAMA_URL: http://ollama:11434
+      KHAZNA_OLLAMA_MODEL: qwen2.5:7b
+      KHAZNA_EGRESS_GUARD: "1"                     # private addresses (like the ollama container) stay reachable
+    volumes: ["khazna-data:/data"]
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ollama"]
+    volumes: ["ollama-models:/root/.ollama"]
+    restart: unless-stopped
+
+volumes:
+  khazna-data:
+  ollama-models:

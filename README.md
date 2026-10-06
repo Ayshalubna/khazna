@@ -1,13 +1,18 @@
 # Khazna خزنة — private document assistant
 
 [![CI](https://github.com/Ayshalubna/khazna/actions/workflows/ci.yml/badge.svg)](https://github.com/Ayshalubna/khazna/actions/workflows/ci.yml)
-**[Live demo ↗](https://lubna777-khazna.hf.space)** · English and Arabic · MIT
+**[Live demo ↗](https://lubna777-khazna.static.hf.space)** · English and Arabic · MIT
 
 Khazna answers questions about a company's confidential documents, in English or Arabic, with the exact source for
 every answer, and nothing leaves the server. It is built for organisations in the UAE that cannot send internal
 documents to an outside AI service (UAE PDPL, sector data-residency rules, plain caution).
 
 ![Ask page](docs/screenshots/ask.png)
+
+**About the live demo:** to keep it free and private, the same Python engine runs *inside your browser* with
+Pyodide (`web/bridge.js` answers the app's API calls locally), so nothing you type or upload leaves your device.
+First load takes a few seconds. In a company, Khazna runs as a server (FastAPI + Docker), optionally with a local
+model; that is the mode described below.
 
 ## What it does
 
@@ -84,6 +89,12 @@ On a company server with Docker, optionally with a larger model served by Ollama
 docker compose up -d                                   # built-in mode
 KHAZNA_LLM=ollama docker compose --profile ollama up -d
 docker compose exec ollama ollama pull qwen2.5:7b
+```
+
+In-browser build (what the live demo serves; the engine, unchanged, running in Pyodide):
+
+```bash
+python -m scripts.build_static     # -> dist/static/, upload to a static host
 ```
 
 Tests and evaluation:

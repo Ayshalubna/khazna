@@ -269,3 +269,39 @@ def test_scan(client):
 def test_privacy_ledger(client):
     p = client.get("/api/privacy", headers={"X-Khazna-Session": SID}).json()
     assert "egress" in p and p["totals"]["questions"] >= 1
+
+
+# ------------------------------------------------------------------ in-browser build (same engine, no server)
+def test_builtin_splitter_matches_langchain():
+    from khazna.corpus import SEPARATORS, SPLITTER, load_corpus
+    from khazna.splitter import RecursiveSplitter
+
+    mine = RecursiveSplitter(520, 60, SEPARATORS)
+    for d in load_corpus():
+        assert mine.split_text(d.text) == SPLITTER.split_text(d.text)
+
+
+def test_dense_search_without_faiss_matches(K, monkeypatch):
+    from khazna import index as ix
+
+    q, allowed = "how many days of annual leave", K.index._allowed(K.allowed("employee"))
+    qv = K.index.encoder.query(q)
+    with_faiss = K.index._dense(qv, allowed, 10)[1][0].tolist()
+    monkeypatch.setattr(ix, "faiss", None)
+    assert K.index._dense(qv, allowed, 10)[1][0].tolist() == with_faiss
+
+
+def test_browser_bridge_api():
+    import json
+
+    from khazna import browser
+
+    call = lambda n, a: json.loads(browser.call(n, json.dumps(a)))  # noqa: E731
+    assert call("meta", {})["body"]["runtime"] == "browser"
+    assert call("document", {"id": "salary_bands", "role": "employee"})["status"] == 404
+    assert call("ask", {"question": "x", "role": "employee"})["status"] == 422
+    assert call("library", {"role": "root"})["status"] == 422
+    a = call("ask", {"question": "What is the minimum password length?", "role": "employee", "sid": "browsertest01"})
+    assert a["status"] == 200 and "14 characters" in a["body"]["answer"]
+    up = json.loads(browser.upload("browsertest01", "a.exe", b"MZ"))
+    assert up["status"] == 422

@@ -22,7 +22,7 @@ Answerable questions: 87. On a library this small keyword search is already as s
 | Current version preferred over the 2024 handbook | 67% |
 | "Not in the documents" questions refused | **85%** of 20 |
 | Questions about documents the role cannot see, refused | 91% of 11 (the rest answered from permitted documents only) |
-| Median / p95 latency | 10 ms / 15 ms |
+| Median / p95 latency | 6 ms / 10 ms |
 
 ## Leaks (must all be zero)
 

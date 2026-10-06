@@ -7,15 +7,20 @@ import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-
 from . import pii
 from .config import CORPUS_DIR, ROLES
 from .text import is_arabic
 
 HEADER = re.compile(r"^---\n(.*?)\n---\n", re.S)
-SPLITTER = RecursiveCharacterTextSplitter(chunk_size=520, chunk_overlap=60,
-                                          separators=["\n\n", "\n", "۔", ". ", "؟ ", "? ", "، ", ", ", " ", ""])
+SEPARATORS = ["\n\n", "\n", "۔", ". ", "؟ ", "? ", "، ", ", ", " ", ""]
+try:
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+    SPLITTER = RecursiveCharacterTextSplitter(chunk_size=520, chunk_overlap=60, separators=SEPARATORS)
+except ImportError:          # e.g. in the browser build: identical behaviour, no LangChain dependency
+    from .splitter import RecursiveSplitter
+
+    SPLITTER = RecursiveSplitter(chunk_size=520, chunk_overlap=60, separators=SEPARATORS)
 
 
 @dataclass

@@ -10,10 +10,10 @@ Dense vectors come from either
 from __future__ import annotations
 
 import math
+import warnings
 from collections import Counter
 from dataclasses import dataclass
 
-import faiss
 import numpy as np
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -23,6 +23,11 @@ from .config import E5_MODEL, RRF_K
 from .corpus import Chunk
 from .glossary import expand
 from .text import normalise_ar, tokens
+
+try:
+    import faiss
+except ImportError:      # the browser build (Pyodide) has no FAISS: exact inner-product search in NumPy instead
+    faiss = None
 
 
 @dataclass
@@ -70,7 +75,9 @@ class LSAEncoder:
         from scipy.sparse import hstack
         X = hstack([self.word.fit_transform(texts), 0.6 * self.char.fit_transform(texts)]).tocsr()
         self.svd = TruncatedSVD(n_components=n_comp, random_state=0)
-        return normalize(self.svd.fit_transform(X)).astype("float32")
+        with warnings.catch_warnings():       # tiny uploads: explained-variance ratio is 0/0, harmless
+            warnings.simplefilter("ignore", RuntimeWarning)
+            return normalize(self.svd.fit_transform(X)).astype("float32")
 
     def query(self, q: str) -> np.ndarray:
         from scipy.sparse import hstack
@@ -116,9 +123,20 @@ class Index:
         self.bm25 = BM25([tokens(t) for t in texts])
         self.encoder = encoder or make_encoder(embed)
         vecs = self.encoder.fit(texts) if encoder is None else encoder.fit(texts)
-        self.faiss = faiss.IndexIDMap(faiss.IndexFlatIP(vecs.shape[1]))
-        self.faiss.add_with_ids(vecs, np.arange(len(chunks), dtype="int64"))
+        self.vecs = vecs
+        if faiss is not None:
+            self.faiss = faiss.IndexIDMap(faiss.IndexFlatIP(vecs.shape[1]))
+            self.faiss.add_with_ids(vecs, np.arange(len(chunks), dtype="int64"))
         self.mode = self.encoder.name
+
+    def _dense(self, qv: np.ndarray, allowed: np.ndarray, n: int) -> tuple[np.ndarray, np.ndarray]:
+        """Top-n inner-product search restricted to the allowed passage ids."""
+        if faiss is not None:
+            params = faiss.SearchParameters(sel=faiss.IDSelectorBatch(allowed.astype("int64")))
+            return self.faiss.search(qv, n, params=params)
+        sims = self.vecs[allowed] @ qv[0]
+        top = np.argsort(-sims, kind="stable")[:n]
+        return sims[top][None, :], allowed[top][None, :].astype("int64")
 
     def _allowed(self, docs: set[str] | None) -> np.ndarray:
         if docs is None:
@@ -140,9 +158,7 @@ class Index:
         order_bm = [i for i in np.argsort(-bm_masked) if mask[i] and bm[i] > 0][: max(k * 4, 20)]
         # --- dense search inside FAISS, restricted to allowed ids
         qv = self.encoder.query(query)
-        sel = faiss.IDSelectorBatch(allowed.astype("int64"))
-        params = faiss.SearchParameters(sel=sel)
-        dists, ids = self.faiss.search(qv, min(max(k * 4, 20), len(allowed)), params=params)
+        dists, ids = self._dense(qv, allowed, min(max(k * 4, 20), len(allowed)))
         order_dn = [int(i) for i in ids[0] if i >= 0]
         dense = {int(i): float(d) for d, i in zip(dists[0], ids[0]) if i >= 0}
         rb = {i: r for r, i in enumerate(order_bm)}

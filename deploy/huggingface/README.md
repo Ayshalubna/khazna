@@ -7,7 +7,7 @@ sdk: gradio
 sdk_version: 6.28.0
 app_file: app.py
 pinned: true
-short_description: Bilingual private RAG with permissions, PII masking, no egress
+short_description: Private Arabic-English RAG with PII masking, no egress
 ---
 
 # Khazna — private document assistant

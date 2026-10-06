@@ -24,6 +24,8 @@
   const session = { questions: 0, masked: 0, injections: 0 };
 
   const T = () => I18N[lang];
+  /** Text for this runtime: the in-browser build has its own wording for a few strings (key + "_br"). */
+  const tx = (key) => { const t = T(); return (meta && meta.runtime === "browser" && t[key + "_br"] !== undefined) ? t[key + "_br"] : t[key]; };
 
   // ------------------------------------------------------------------ helpers
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -194,7 +196,7 @@
   <section class="intro">
     <div>
       <h1>${esc(t.title)}</h1>
-      <p class="lede">${esc(t.lede)}</p>
+      <p class="lede">${esc(tx("lede"))}</p>
     </div>
     <figure class="specimen" aria-label="${esc(t.specimen_title)}">
       <span class="stamp">${esc(t.specimen_stamp)}</span>
@@ -242,9 +244,9 @@
       <li><span>${esc(t.rail_q)}</span><b>${session.questions}</b></li>
       <li><span>${esc(t.rail_mask)}</span><b class="${session.masked ? "good" : ""}">${session.masked}</b></li>
       <li><span>${esc(t.rail_inj)}</span><b class="${session.injections ? "good" : ""}">${session.injections}</b></li>
-      <li><span>${esc(t.rail_net)}</span><b>${g.blocked_attempts || 0}</b></li>
-      <li><span>${esc(g.enabled ? t.rail_guard_on : t.rail_guard_off)}</span><b class="${g.enabled ? "good" : "bad"}">${g.enabled ? "●" : "○"}</b></li>`;
-    $("#whereis").textContent = t.rail_where(modelName());
+      <li><span>${esc(tx("rail_net"))}</span><b>${g.blocked_attempts || 0}</b></li>
+      <li><span>${esc(g.enabled ? tx("rail_guard_on") : t.rail_guard_off)}</span><b class="${g.enabled ? "good" : "bad"}">${g.enabled ? "●" : "○"}</b></li>`;
+    $("#whereis").textContent = tx("rail_where")(modelName());
   }
   async function refreshPrivacy() {
     try {
@@ -335,7 +337,7 @@
       else badges.push(["plain", t.b_quote]);
     }
     if (a.sources.some((s) => s.superseded)) badges.push(["plain", t.b_old]);
-    badges.push(["plain", `${t.b_local} · ${a.ms} ms`]);
+    badges.push(["plain", `${tx("b_local")} · ${a.ms} ms`]);
 
     const srcs = a.sources.map((s) => {
       const flags = [];
@@ -453,7 +455,7 @@
     const ttl = meta ? meta.upload_ttl_min : 30, mb = meta ? meta.max_upload_mb : 5;
     main.innerHTML = `<div class="wrap">
       <h1>${esc(t.up_h)}</h1>
-      <p class="lede">${esc(t.up_lede(ttl, mb))}</p>
+      <p class="lede">${esc(tx("up_lede")(ttl, mb))}</p>
       <label class="drop" id="drop" tabindex="0">
         <strong>${esc(t.drop)}</strong><span class="muted">${esc(t.drop2)}</span>
         <input type="file" id="file" accept=".pdf,.docx,.txt,.md,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
@@ -585,7 +587,7 @@
     main.innerHTML = `<div class="wrap">
       <h1>${esc(t.how_h)}</h1>
       <div class="flow">${t.flow.map(([h, p]) => `<div><b>${esc(h)}</b>${esc(p)}</div>`).join("")}</div>
-      <div class="prose">${t.how_html()}</div>
+      <div class="prose">${meta && meta.runtime === "browser" ? t.how_br : ""}${t.how_html()}</div>
       ${meta ? `<p class="small muted">${esc(meta.retrieval)} · ${meta.documents} / ${meta.passages}</p>` : ""}
     </div>`;
   }

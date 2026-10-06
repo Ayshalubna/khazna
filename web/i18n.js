@@ -68,6 +68,11 @@
 <li>Without a model, answers are quotes, so very differently worded questions can miss. The model mode handles those.</li>
 <li>Scanned PDFs need OCR, which is not included.</li>
 </ul>`,
+    lede_br: "Khazna answers questions about confidential documents in English or Arabic, with the exact source for every answer. It only reads what your role is allowed to see, hides personal data and ignores instructions planted inside documents. In this live demo the whole engine runs inside your browser, so nothing you type or upload leaves your device.",
+    b_local_br: "Answered in your browser", rail_net_br: "Requests to other servers since loading", rail_guard_on_br: "Running in your browser",
+    rail_where_br: (m) => `Model: ${m || "built-in quoting (no model)"}. The Python engine runs inside this page (Pyodide); questions and files are never sent anywhere.`,
+    up_lede_br: (t, m) => `Upload a PDF, Word or text file (up to ${m} MB) and ask questions about it. It is read inside your browser and never uploaded anywhere; it is forgotten after ${t} minutes or when you close the tab.`,
+    how_br: "<h2>How this live demo runs</h2><p>To keep the demo free and private, the same Python engine (search, masking, guards and checks) runs inside your browser with Pyodide. In a company it runs as a server with Docker, optionally with a local model (Qwen2.5 via Hugging Face transformers or Ollama); that mode is scored by a separate CI job.</p>",
     toast_err: "Something went wrong. Try again.", rate: "Too many requests. Wait a minute.", err_upload: "Upload failed",
   };
 
@@ -139,6 +144,11 @@
 <li>بدون نموذج تكون الإجابات اقتباسات، فقد تفوتها الأسئلة المصاغة بشكل مختلف كثيرًا، ويعالج وضع النموذج ذلك.</li>
 <li>ملفات PDF الممسوحة ضوئيًا تحتاج إلى تقنية التعرف الضوئي، وهي غير مضمّنة.</li>
 </ul>`,
+    lede_br: "تجيب «خزنة» عن الأسئلة حول المستندات السرية بالعربية أو الإنجليزية، مع ذكر المصدر الدقيق لكل إجابة. ولا تقرأ إلا ما يسمح به دورك، وتُخفي البيانات الشخصية، وتتجاهل التعليمات المدسوسة داخل المستندات. في هذا العرض المباشر يعمل المحرك بالكامل داخل متصفحك، فلا يغادر جهازك أي شيء تكتبه أو ترفعه.",
+    b_local_br: "أُجيب داخل متصفحك", rail_net_br: "طلبات إلى خوادم أخرى منذ التحميل", rail_guard_on_br: "يعمل داخل متصفحك",
+    rail_where_br: (m) => `النموذج: ${m || "الاقتباس المدمج (بدون نموذج)"}. يعمل محرك بايثون داخل هذه الصفحة (Pyodide)، ولا تُرسل الأسئلة أو الملفات إلى أي جهة.`,
+    up_lede_br: (t, m) => `ارفع ملف PDF أو Word أو نصًا (حتى ${m} ميغابايت) واسأل عنه. يُقرأ داخل متصفحك ولا يُرفع إلى أي مكان، ويُنسى بعد ${t} دقيقة أو عند إغلاق الصفحة.`,
+    how_br: "<h2>كيف يعمل هذا العرض المباشر</h2><p>ليبقى العرض مجانيًا وخاصًا، يعمل محرك بايثون نفسه (البحث والإخفاء والحماية والتحقق) داخل متصفحك باستخدام Pyodide. وفي الشركة يعمل كخادم باستخدام Docker، مع نموذج محلي اختياري (Qwen2.5 عبر transformers أو Ollama)، ويُقيَّم هذا الوضع في مهمة CI منفصلة.</p>",
     toast_err: "حدث خطأ. حاول مرة أخرى.", rate: "طلبات كثيرة. انتظر دقيقة.", err_upload: "تعذر الرفع",
   };
   window.KH_I18N = { en: EN, ar: AR };

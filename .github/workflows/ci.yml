@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test-and-evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      KHAZNA_DB: /tmp/khazna_ci.db
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - name: Lint
+        run: ruff check .
+      - name: Unit and API tests
+        run: pytest -q
+      - name: Evaluation gate (127 questions; fails on any leak or regression)
+        run: python -m eval.run_eval
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: |
+            eval/RESULTS.md
+            eval/results.json
+
+  # Scores the local model mode (Qwen2.5-1.5B-Instruct on CPU) on the same questions. Slow, so it only runs on demand.
+  llm-eval:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      KHAZNA_DB: /tmp/khazna_ci.db
+      KHAZNA_LLM: transformers
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+      - run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements-llm.txt
+      - name: Evaluate the local model (fails on any leak)
+        run: python -m eval.run_eval --llm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eval-results-llm
+          path: eval/results_llm.json
